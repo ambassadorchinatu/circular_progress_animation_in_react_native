@@ -1,16 +1,5 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
-
-import React, {useEffect} from 'react';
+import React, {useState} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   Dimensions,
@@ -20,10 +9,7 @@ import {
 import { Svg, Path, Circle } from 'react-native-svg';
 import Animated, { useAnimatedProps, withSpring, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 
-
-
 const {width, height} = Dimensions.get('screen');
-
 const Circle_Len = 1000;
 const Radius = Circle_Len / (2 * Math.PI);
 
@@ -31,6 +17,7 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 const App = () => {
+  const [loading, setLoading] = useState(false);
 
 const progressCircle = useSharedValue(1);
 const markScale = useSharedValue(1);
@@ -40,18 +27,19 @@ const animatedProps= useAnimatedProps(() => ({
   strokeDashoffset: Circle_Len * progressCircle.value,
 }))
 
-// useEffect(() => {
-//   progressCircle.value = withTiming(0, {duration: 3000})
-//   markScale.value = withDelay(1000, withSpring(80));
-//   circleOpacity.value = withDelay(1000, withTiming(1));
-//   markOpacity.value = withDelay(1500, withTiming(1, {duration: 500}) );
-// }, []); 
-
 const mountAnimation = () => {
   progressCircle.value = withTiming(0, {duration: 2000})
   markScale.value = withDelay(1000, withSpring(80));
   circleOpacity.value = withDelay(1000, withTiming(1));
   markOpacity.value = withDelay(1500, withTiming(1, {duration: 500}) );
+  setLoading(true)
+  setTimeout(() => {
+    setLoading(false)
+    progressCircle.value = withTiming(1, {duration: 500})
+    markScale.value = withDelay(500, withSpring(0));
+    circleOpacity.value = withDelay(500, withTiming(0));
+    markOpacity.value = withDelay(500, withTiming(0, {duration: 500}) );
+    }, 3000);
 };
 
 const reanimatedStyle = useAnimatedStyle(() => {
@@ -68,11 +56,11 @@ const tickAnimatedStyle = useAnimatedStyle(() => {
 });
 
   return (
-   <View style={styles.container}>
-         <TouchableOpacity onPress={mountAnimation} style={{bottom: 80, width: width * 0.7, height: 60, position: 'absolute', backgroundColor: '#54B435', borderRadius: 15, alignItems: 'center', justifyContent: 'center'}}>
-          <Text style={{fontSize: 20, color: 'white', textTransform: 'uppercase'}}>Show Animation</Text>
-         </TouchableOpacity>
-      <Svg>
+  <View style={styles.container}>
+      {loading 
+      ?
+       <>
+         <Svg>
         <Circle
         cx = { width / 2}
         cy = { height / 2 }
@@ -94,12 +82,12 @@ const tickAnimatedStyle = useAnimatedStyle(() => {
         />
       </Svg>
       
-      
       <Animated.View 
         style={[{
           height: 3,
           position: 'absolute',
           width: 3,
+          bottom: 340,
           backgroundColor: '#54B435',
           borderRadius: 150,
         },
@@ -110,6 +98,7 @@ const tickAnimatedStyle = useAnimatedStyle(() => {
           height: 110,
           position: 'absolute',
           width: 110,
+          bottom: 290,
           backgroundColor: 'transparent',
           transform: [{scale: 2}]
         }}>
@@ -123,9 +112,15 @@ const tickAnimatedStyle = useAnimatedStyle(() => {
         strokeLinecap="round"
         />
       </Svg>
- 
         </View>
-   </View>
+       </>
+      : 
+      null
+     }
+      <TouchableOpacity onPress={()=>mountAnimation()} style={{bottom: 80, position: 'absolute', width: width * 0.7, height: 60, backgroundColor: '#54B435', borderRadius: 15, alignItems: 'center', justifyContent: 'center'}}>
+       <Text style={{fontSize: 20, color: 'white', textTransform: 'uppercase'}}>Show Animation</Text>
+       </TouchableOpacity>
+  </View>
   );
 };
 
